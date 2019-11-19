@@ -1,57 +1,62 @@
 <link rel="stylesheet" href="css/app.css" type="text/css" />
-<style type="text/css">
-    body{
-        position: relative;
-    }
-    #dialog{
-        width: 500px;
-        height: 300px;
-        position: absolute;
-        margin:auto;
-        top:0;
-        left: 0;
-        right: 0;
-        text-align: center;
-        display: table;
-        border:1px solid black;
-    }
-    #dialog p{
-        display: table-cell;
-        vertical-align: middle;
-    }
-</style>
+<script type="text/javascript" src="js/app.js"></script>
 
-
+@if(session('status') !== null)
 <div class="alert alert-danger">
 {{ session('status') }}
 </div>
-<h1>TOPページです</h1>
+@endif
 
+<h1>TOPページです。あなたのマイナンバーは{{ session("mynumber") }}</h1>
+<div class="container row mx-auto">
 @foreach($profiles as $profile)
-<div>
-    <p class="name">{{ $profile->name }}</p><br>
-    <img src="{{ $profile->image_path }}"><br>
-    {{ $profile->message }}<br>
-    現在の得票数{{ $vote->where('profile_id', $profile->id)->count() }}票
-<form action="/" method="POST">
-    @csrf    
-    <input type="hidden" name="profile_id" value="{{ $profile->id }}"/>
-    <input type="submit" value="投票する" id="submit" />
-</form>
+<div class="col-md-3 mb-3">
+    <div class="card">
+        <img class="card-img-top" src="{{ $profile->image_path }}" alt="イメージ">
+        <div class="card-body">
+        <p class="name">{{ $profile->name }}</p><br>
+        {{ $profile->message }}<br>
+        現在の得票数{{ $vote->where('profile_id', $profile->id)->count() }}票
+        
+        <form action="/" method="POST" name="form{{ $profile->id }}">
+            @csrf    
+            <input type="hidden" name="profile_id" value="{{ $profile->id }}"/>
+        </form>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal{{ $profile->id }}">
+        投票する
+        </button>
+        </div>
+    </div>
 </div>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal{{ $profile->id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">ご確認</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            あなたがクリックしたのは、{{ $profile->name }}です。<br>
+            本当に投票しますか？
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">やっぱりやめる</button>
+            <button type="button" class="btn btn-primary" data-val="{{$profile->id }}">投票する</button>
+          </div>
+        </div>
+      </div>
+    </div>
 @endforeach
-
-
-<div id="dialog" class="card">
-    <p>あなたが投票するのは、○○です。<br>本当によろしいですか？</p>
 </div>
+
 <script type="text/javascript">
-    [...document.querySelectorAll("#submit")].forEach((element, index) => {
+    [...document.querySelectorAll('.modal-footer button:nth-child(2)')].forEach((element, index) => {
      element.addEventListener("click", function(e){
-        e.preventDefault();
-        const name = this.parentNode.parentNode.firstElementChild.textContent;
-        document.getElementById("dialog").style.top = this.offsetTop - 300;
-        // document.getElementById("dialog").textContent = "あなたが投票するのは"+ name + "\n本当によろしいですか？";
+        const id= element.dataset.val;
+         document.forms["form" + id].submit();
     });
     });
 </script>

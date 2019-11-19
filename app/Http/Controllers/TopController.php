@@ -33,6 +33,9 @@ class TopController extends Controller
      */
     public function index()
     {
+        if (empty(session('mynumber'))) {
+            return redirect('/pre');
+        }
         $vote = new Vote();
 
         return view('index', ['profiles' => Profile::all(), 'vote' => $vote]);
