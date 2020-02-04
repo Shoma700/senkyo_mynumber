@@ -31,11 +31,14 @@ class TopController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        \Log::emergency('システムがダウンしています！');
         if (empty(session('mynumber'))) {
             return redirect('/pre');
         }
+        // dump(session());
+        // dump($request->session()->getId());
         $vote = new Vote();
 
         return view('index', ['profiles' => Profile::all(), 'vote' => $vote]);
@@ -60,6 +63,9 @@ class TopController extends Controller
     public function store(Request $request)
     {
         $vote = new Vote();
+        if (Vote::where('mynumber', session('mynumber'))->count() > 0) {
+            return redirect('/')->with(['status' => 'すでに投票済みです']);
+        }
         $vote->mynumber = session('mynumber');
         $vote->profile_id = $request->input('profile_id');
         $vote->save();
